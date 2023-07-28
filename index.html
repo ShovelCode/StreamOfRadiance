@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      * { padding: 0; margin: 0; }
+      body { background: #000; color: #fff; font-size: 24px; font-family: Arial, sans-serif; }
+      #gameCanvas { background: #222; display: block; margin: 20px auto; }
+      #score { text-align: center; margin-bottom: 20px; }
+      .player { width: 0; height: 0; border-left: 25px solid transparent; border-right: 25px solid transparent; border-bottom: 50px solid #0f0; position: absolute; }
+      .enemy { width: 35px; height: 35px; background: #f00; position: absolute; }
+      .bullet { width: 5px; height: 15px; background: #ff0; position: absolute; }
+    </style>
+  </head>
+  <body>
+    <div id="score">Score: 0</div>
+    <div id="gameCanvas"></div>
+
+    <script>
+      const gameCanvas = document.querySelector("#gameCanvas");
+      gameCanvas.style.height = "600px";
+      gameCanvas.style.width = "800px";
+
+      let player = document.createElement("div");
+      player.classList.add("player");
+      gameCanvas.appendChild(player);
+      
+      let score = 0;
+      const scoreDisplay = document.querySelector("#score");
+
+      const movePlayer = (e) => {
+        player.style.left = `${e.pageX - player.offsetWidth / 2}px`;
+      };
+
+      const shoot = () => {
+        let bullet = document.createElement("div");
+        bullet.classList.add("bullet");
+        bullet.style.left = `${parseInt(player.style.left) + player.offsetWidth / 2}px`;
+        bullet.style.top = `${gameCanvas.offsetHeight - player.offsetHeight}px`;
+        gameCanvas.appendChild(bullet);
+
+        const moveBullet = setInterval(() => {
+          bullet.style.top = `${parseInt(bullet.style.top) - 5}px`;
+          if (parseInt(bullet.style.top) < 0) {
+            clearInterval(moveBullet);
+            gameCanvas.removeChild(bullet);
+          }
+        }, 20);
+      };
+
+      setInterval(() => {
+        let enemy = document.createElement("div");
+        enemy.classList.add("enemy");
+        enemy.style.left = `${Math.random() * (gameCanvas.offsetWidth - 50)}px`;
+        enemy.style.top = "0px";
+        gameCanvas.appendChild(enemy);
+
+        const moveEnemy = setInterval(() => {
+          enemy.style.top = `${parseInt(enemy.style.top) + 3}px`;
+          if (parseInt(enemy.style.top) > gameCanvas.offsetHeight) {
+            clearInterval(moveEnemy);
+            gameCanvas.removeChild(enemy);
+          }
+        }, 20);
+      }, 1000);
+
+      setInterval(() => {
+        let bullets = document.querySelectorAll(".bullet");
+        let enemies = document.querySelectorAll(".enemy");
+
+        bullets.forEach((bullet) => {
+          enemies.forEach((enemy) => {
+            let bx = parseInt(bullet.style.left);
+            let by = parseInt(bullet.style.top);
+            let ex = parseInt(enemy.style.left);
+            let ey = parseInt(enemy.style.top);
+
+            if (
+              bx < ex + 50 &&
+              bx + 5 > ex &&
+              by < ey + 50 &&
+              by + 15 > ey
+            ) {
+              gameCanvas.removeChild(bullet);
+              gameCanvas.removeChild(enemy);
+              score += 10;
+              scoreDisplay.textContent = `Score: ${score}`;
+            }
+          });
+        });
+      }, 20);
+
+      gameCanvas.addEventListener("mousemove", movePlayer);
+      gameCanvas.addEventListener("click", shoot);
+    </script>
+  </body>
+</html>
+
